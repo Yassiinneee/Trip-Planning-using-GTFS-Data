@@ -1,0 +1,715 @@
+# **Application-Based Benchmarking of Redis and MongoDB for Trip Planning Using GTFS Data**
+
+**Student:** Yassine Kaltoum
+
+**Module:** NoSQL Databases
+
+**Checkpoint:** Redis vs MongoDB Benchmarking using GTFS Data
+
+**Date:** July 2026
+
+---
+
+# Table of Contents
+
+1. Introduction
+2. Introduction to GTFS Data
+3. Overview of Redis and MongoDB
+4. Benchmarking Criteria
+5. Data Ingestion and Storage
+6. Query Performance
+7. Scalability and Efficiency
+8. Practical Application Design
+9. Benchmark Results
+10. Advantages and Disadvantages
+11. Conclusion
+12. References
+
+---
+
+# 1. Introduction
+
+Public transportation systems generate enormous amounts of data every day. Efficiently storing, retrieving, and processing this information is essential for modern trip-planning applications such as Google Maps, Citymapper, Moovit, and Transit.
+
+One of the most widely adopted standards for representing public transportation data is the **General Transit Feed Specification (GTFS)**. GTFS enables developers to build applications capable of planning routes, calculating arrival times, and displaying transportation schedules.
+
+To process GTFS data efficiently, developers often use NoSQL databases because they provide high performance, scalability, and flexibility.
+
+This report benchmarks two leading NoSQL databases:
+
+* **Redis**
+* **MongoDB**
+
+The objective is to compare their performance, storage models, scalability, and suitability for building a real-time trip planning application.
+
+---
+
+# 2. Introduction to GTFS Data
+
+## What is GTFS?
+
+GTFS (General Transit Feed Specification) is an open data standard developed by Google for describing public transportation systems.
+
+Transit agencies publish GTFS feeds that can be consumed by applications to provide route planning and schedule information.
+
+GTFS data is usually distributed as a ZIP archive containing multiple CSV files.
+
+---
+
+## Main GTFS Files
+
+| File               | Purpose                         |
+| ------------------ | ------------------------------- |
+| agency.txt         | Transit agency information      |
+| routes.txt         | Bus, metro, train routes        |
+| trips.txt          | Individual trips along routes   |
+| stops.txt          | Bus stops and station locations |
+| stop_times.txt     | Arrival and departure times     |
+| calendar.txt       | Operating days                  |
+| calendar_dates.txt | Holiday schedules               |
+| shapes.txt         | Geographic route coordinates    |
+| transfers.txt      | Transfer information            |
+
+---
+
+## Information Contained in GTFS
+
+GTFS contains:
+
+* Stop IDs
+* Stop names
+* Latitude
+* Longitude
+* Route IDs
+* Route names
+* Trip IDs
+* Departure times
+* Arrival times
+* Vehicle directions
+* Calendar schedules
+* Holiday exceptions
+* Geographic paths
+
+---
+
+## How GTFS Is Used for Trip Planning
+
+A trip planning application typically performs the following steps:
+
+1. User enters origin.
+2. User enters destination.
+3. Application locates nearby stops.
+4. Determines available routes.
+5. Calculates travel time.
+6. Finds transfers if necessary.
+7. Displays optimal journey.
+
+Example:
+
+Origin:
+
+Airport
+
+↓
+
+Nearest Stop
+
+↓
+
+Bus Route 14
+
+↓
+
+Transfer at Central Station
+
+↓
+
+Metro Line 2
+
+↓
+
+Destination
+
+---
+
+# 3. Overview of Redis and MongoDB
+
+## What is Redis?
+
+Redis (Remote Dictionary Server) is an in-memory NoSQL database designed for extremely fast data access.
+
+Instead of storing data on disk first, Redis stores information primarily in RAM.
+
+This makes Redis one of the fastest databases available.
+
+Redis is commonly used for:
+
+* Caching
+* Session storage
+* Leaderboards
+* Real-time analytics
+* Messaging
+* Trip planning caches
+
+---
+
+## Redis Data Structures
+
+Redis supports several native data structures:
+
+* Strings
+* Lists
+* Sets
+* Sorted Sets
+* Hashes
+* Streams
+* Bitmaps
+* HyperLogLog
+
+Example:
+
+```
+Stop:
+Key: stop:205
+
+Hash
+
+Name = Central Station
+
+Latitude = 36.806
+
+Longitude = 10.181
+```
+
+---
+
+## What is MongoDB?
+
+MongoDB is a document-oriented NoSQL database.
+
+Instead of tables and rows, MongoDB stores data as BSON documents (Binary JSON).
+
+Example:
+
+```json
+{
+  "_id": 205,
+  "name": "Central Station",
+  "latitude": 36.806,
+  "longitude": 10.181
+}
+```
+
+MongoDB is optimized for flexible schemas and large datasets.
+
+---
+
+## Differences from SQL Databases
+
+| SQL Database    | Redis         | MongoDB                               |
+| --------------- | ------------- | ------------------------------------- |
+| Tables          | Key-Value     | Collections                           |
+| Rows            | Values        | Documents                             |
+| Fixed schema    | No schema     | Flexible schema                       |
+| Joins           | Not supported | Limited via aggregation               |
+| ACID            | Full          | Multi-document transactions supported |
+| Primary storage | Disk          | Disk with memory caching              |
+
+---
+
+## Key Features of Redis
+
+* Extremely fast
+* In-memory storage
+* Supports TTL
+* Pub/Sub messaging
+* Atomic operations
+* High throughput
+* Replication
+* Clustering
+
+---
+
+## Key Features of MongoDB
+
+* Document database
+* Flexible schema
+* Powerful indexing
+* Aggregation framework
+* Geospatial queries
+* Horizontal scaling
+* Replication
+* Transactions
+
+---
+
+# 4. Benchmarking Criteria
+
+To compare Redis and MongoDB fairly, the following metrics should be measured.
+
+## 1. Read Performance
+
+Average time to retrieve:
+
+* Stop
+* Route
+* Trip
+
+Measured in milliseconds.
+
+---
+
+## 2. Write Performance
+
+Time required to insert GTFS data.
+
+Measured as:
+
+Documents inserted per second.
+
+---
+
+## 3. Query Latency
+
+Average execution time of:
+
+* Nearby stops
+* Next departures
+* Route lookup
+
+---
+
+## 4. Memory Usage
+
+Amount of RAM consumed while storing GTFS datasets.
+
+---
+
+## 5. Disk Usage
+
+Amount of storage occupied by GTFS data.
+
+---
+
+## 6. Scalability
+
+Performance when dataset size increases from:
+
+100,000
+
+↓
+
+1 million
+
+↓
+
+10 million records
+
+---
+
+## 7. Concurrent Users
+
+Ability to serve:
+
+100
+
+500
+
+1000
+
+5000
+
+simultaneous users.
+
+---
+
+## Why Benchmark Databases?
+
+Benchmarking helps developers:
+
+* Choose the correct database.
+* Predict application performance.
+* Reduce infrastructure costs.
+* Improve user experience.
+* Identify bottlenecks before deployment.
+
+Without benchmarking, selecting a database becomes guesswork rather than an informed engineering decision.
+
+---
+
+# 5. Data Ingestion and Storage
+
+## GTFS Data Ingestion into MongoDB
+
+### Step 1
+
+Download GTFS ZIP.
+
+### Step 2
+
+Extract CSV files.
+
+### Step 3
+
+Convert CSV into JSON.
+
+### Step 4
+
+Import into MongoDB.
+
+Example:
+
+```
+mongoimport --collection stops --file stops.json --jsonArray
+```
+
+Collections created:
+
+* stops
+* routes
+* trips
+* stop_times
+* calendar
+
+---
+
+## GTFS Data Ingestion into Redis
+
+CSV files are parsed using Python or Node.js.
+
+Each stop is inserted as a Redis Hash.
+
+Example:
+
+```
+HSET stop:205
+
+name "Central Station"
+
+lat 36.806
+
+lon 10.181
+```
+
+Nearby stops can also be indexed using Redis GEO commands.
+
+---
+
+## Storage Comparison
+
+| Feature        | Redis          | MongoDB   |
+| -------------- | -------------- | --------- |
+| Storage        | RAM            | Disk      |
+| Persistence    | Optional       | Default   |
+| Compression    | Limited        | Good      |
+| Flexibility    | Medium         | High      |
+| Large datasets | Limited by RAM | Excellent |
+
+---
+
+# 6. Query Performance
+
+Typical trip planning operations include:
+
+---
+
+## Query 1
+
+Find nearby stops.
+
+MongoDB:
+
+```
+$near
+```
+
+Redis:
+
+```
+GEORADIUS
+```
+
+---
+
+## Query 2
+
+Find next departures.
+
+Returns:
+
+* Bus number
+* Departure time
+* Destination
+
+---
+
+## Query 3
+
+Find all trips on Route 12.
+
+MongoDB:
+
+```
+find({route_id:12})
+```
+
+Redis:
+
+```
+SMEMBERS route:12
+```
+
+---
+
+## Query 4
+
+Shortest travel path.
+
+Uses:
+
+* Route graph
+* Transfers
+* Stop connections
+
+---
+
+## Expected Results
+
+Redis generally provides:
+
+* Lower latency
+* Faster lookups
+* Better caching
+
+MongoDB provides:
+
+* Rich filtering
+* Complex aggregations
+* Better analytics
+
+---
+
+# 7. Scalability and Efficiency
+
+## Redis Scalability
+
+Advantages:
+
+* Clustering
+* Replication
+* Extremely fast
+
+Limitations:
+
+* RAM is expensive.
+* Very large GTFS datasets require significant memory.
+
+---
+
+## MongoDB Scalability
+
+MongoDB scales using sharding.
+
+Example:
+
+Shard 1
+
+Stops A-M
+
+Shard 2
+
+Stops N-Z
+
+Each shard stores part of the dataset.
+
+Benefits:
+
+* Virtually unlimited storage.
+* Handles billions of documents.
+* Excellent horizontal scaling.
+
+---
+
+## Recommendation
+
+For a city transportation application with millions of users:
+
+**MongoDB** should be the primary database because it efficiently manages large datasets, supports geospatial indexing, offers flexible schemas, and scales horizontally.
+
+**Redis** should be added as a caching layer to store frequently accessed routes, stops, and trip results, reducing latency and database load.
+
+---
+
+# 8. Practical Application Design
+
+## Architecture
+
+```
+User
+
+↓
+
+Web Interface
+
+↓
+
+REST API (Node.js + Express)
+
+↓
+
+MongoDB
+(Main Storage)
+
+↓
+
+Redis
+(Cache)
+```
+
+---
+
+## Workflow
+
+### Step 1
+
+User searches destination.
+
+↓
+
+### Step 2
+
+Express API receives request.
+
+↓
+
+### Step 3
+
+Check Redis cache.
+
+↓
+
+If found
+
+↓
+
+Return immediately.
+
+Otherwise
+
+↓
+
+Query MongoDB.
+
+↓
+
+Store result in Redis.
+
+↓
+
+Return response.
+
+---
+
+## Implementation Steps
+
+1. Download GTFS feed.
+2. Extract CSV files.
+3. Convert CSV to JSON.
+4. Import into MongoDB.
+5. Configure Redis cache.
+6. Build Express API.
+7. Create trip search endpoint.
+8. Cache popular routes.
+9. Add geospatial indexes.
+10. Test application performance.
+11. Benchmark response times.
+12. Deploy application.
+
+---
+
+# 9. Benchmark Results
+
+| Metric             | Redis     | MongoDB          |
+| ------------------ | --------- | ---------------- |
+| Read Speed         | Excellent | Very Good        |
+| Write Speed        | Excellent | Good             |
+| Query Latency      | Very Low  | Low              |
+| Memory Usage       | High      | Moderate         |
+| Disk Usage         | Low       | Efficient        |
+| Scalability        | Good      | Excellent        |
+| Geospatial Queries | Excellent | Excellent        |
+| Complex Queries    | Limited   | Excellent        |
+| Data Persistence   | Optional  | Native           |
+| Best Use           | Cache     | Primary Database |
+
+---
+
+# 10. Advantages and Disadvantages
+
+## Redis
+
+### Advantages
+
+* Extremely fast
+* Microsecond response times
+* Ideal caching layer
+* GEO indexing
+* Real-time performance
+
+### Disadvantages
+
+* RAM intensive
+* Smaller practical storage capacity
+* Limited complex querying
+* Data persistence requires configuration
+
+---
+
+## MongoDB
+
+### Advantages
+
+* Flexible document model
+* Excellent indexing
+* Geospatial support
+* Aggregation framework
+* Horizontal scaling
+* Strong persistence
+
+### Disadvantages
+
+* Slower than Redis for repeated reads
+* Higher query latency than an in-memory cache
+* More complex administration in large distributed deployments
+
+---
+
+# 11. Conclusion
+
+Redis and MongoDB are both powerful NoSQL databases, but they are optimized for different purposes.
+
+Redis excels in speed because it stores data in memory. It is ideal for caching frequently requested routes, nearby stops, and trip results, making it an excellent choice for improving response times in real-time applications.
+
+MongoDB, on the other hand, provides persistent document storage, flexible schemas, advanced indexing, geospatial capabilities, and horizontal scalability. These features make it highly suitable for storing complete GTFS datasets and supporting complex trip-planning queries.
+
+The benchmarking comparison indicates that Redis achieves the fastest read performance and lowest latency, while MongoDB offers superior scalability, storage capacity, and query flexibility.
+
+For future GTFS-based trip-planning systems, the most effective architecture is a hybrid solution:
+
+* **MongoDB** as the primary database for storing GTFS data.
+* **Redis** as a high-speed caching layer for frequently accessed routes, stops, and search results.
+
+This combination delivers excellent performance, scalability, reliability, and an enhanced user experience, making it the preferred approach for modern transportation applications.
+
+---
+
+# 12. References
+
+1. General Transit Feed Specification (GTFS) Documentation.
+2. Redis Official Documentation.
+3. MongoDB Official Documentation.
+4. Node.js Documentation.
+5. Express.js Documentation.
+6. NoSQL Distilled – Pramod J. Sadalage & Martin Fowler.
+7. MongoDB: The Definitive Guide.
+8. Redis in Action – Josiah Carlson.
