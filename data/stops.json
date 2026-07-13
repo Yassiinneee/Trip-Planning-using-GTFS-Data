@@ -1,0 +1,20 @@
+[
+    {
+        "stop_id": "S1",
+        "stop_name": "Central Station",
+        "stop_lat": 36.8065,
+        "stop_lon": 10.1815
+    },
+    {
+        "stop_id": "S2",
+        "stop_name": "Airport",
+        "stop_lat": 36.8510,
+        "stop_lon": 10.2270
+    },
+    {
+        "stop_id": "S3",
+        "stop_name": "University",
+        "stop_lat": 36.8090,
+        "stop_lon": 10.1350
+    }
+]
